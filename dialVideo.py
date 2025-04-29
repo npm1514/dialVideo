@@ -10,7 +10,7 @@ import json
 
 # === SETTINGS ===
 video_dir = "/Users/nickmarucci/CodeProjects/MicroServers/videos"
-arduino_port = "/dev/tty.usbmodem11101"
+arduino_port = "/dev/tty.usbmodem1201"
 baud_rate = 9600
 vlc_password = str(random.randint(10000, 99999))  # Random password for this session
 http_port = 8080
@@ -68,8 +68,23 @@ def start_vlc():
     print("Starting VLC with HTTP interface...")
     vlc_process = subprocess.Popen(vlc_command)
     
-    # Give VLC time to start
-    time.sleep(3)
+    # Give VLC more time to start up
+    print("Waiting for VLC to initialize...")
+    time.sleep(5)
+    
+    # Test if VLC HTTP interface is working
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(f"http://{http_host}:{http_port}/requests/status.json", 
+                                   auth=('', vlc_password), 
+                                   timeout=2)
+            if response.status_code == 200:
+                print("VLC HTTP interface is ready")
+                break
+        except Exception as e:
+            print(f"VLC HTTP not ready yet (attempt {attempt+1}/{max_retries}): {e}")
+            time.sleep(2)
     
     # Add all videos to playlist
     for video in video_files:
@@ -88,7 +103,18 @@ def make_vlc_request(command, params=None):
     try:
         response = requests.get(command_url, auth=('', vlc_password), timeout=2)
         if response.status_code == 200:
-            return response.json()
+            # Check if the response is empty
+            if not response.text.strip():
+                print(f"Empty response from VLC")
+                return {}
+            
+            # Try to parse JSON
+            try:
+                return response.json()
+            except json.JSONDecodeError as e:
+                print(f"JSON decode error: {e}")
+                print(f"Response content: {response.text[:100]}...")
+                return {}
         else:
             print(f"Error from VLC: {response.status_code}")
             return None
@@ -113,7 +139,7 @@ def play_video_at_index(index):
     # VLC playlist indices start at 0
     result = make_vlc_request("pl_play", f"id={index}")
     
-    if result:
+    if result is not None:  # Changed from if result:
         current_index = index
         print(f"Now playing: {os.path.basename(video_files[index])}")
         
