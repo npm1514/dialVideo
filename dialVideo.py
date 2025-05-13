@@ -9,8 +9,10 @@ import random
 import json
 
 # === SETTINGS ===
-video_dir = "/Users/nickmarucci/CodeProjects/MicroServers/videos"
+# video_dir = "/Users/nickmarucci/CodeProjects/MicroServers/videos"
 # video_dir = "/Users/nickmarucci/CodeProjects/MicroServers/beat"
+video_dir = "/Users/nickmarucci/CodeProjects/MicroServers/frameofmynd"
+
 arduino_port = "/dev/tty.usbmodem11201"
 baud_rate = 9600
 vlc_password = str(random.randint(10000, 99999))  # Random password for this session
