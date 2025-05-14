@@ -82,7 +82,9 @@ def start_vlc():
         "--extraintf", "http",
         "--playlist-autostart",
         "--no-video-deco",  # No window decoration
-        "--quiet"           # Less console output
+        "--quiet",          # Less console output
+        "--video-filter", "transform",  # Enable transform filter
+        "--transform-type", "hflip"     # Horizontal flip (mirror effect)
     ]
     
     print("Starting VLC with HTTP interface...")
