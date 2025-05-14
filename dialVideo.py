@@ -19,17 +19,17 @@ vlc_password = str(random.randint(10000, 99999))  # Random password for this ses
 http_port = 8080
 http_host = "127.0.0.1"
 
-# === Load .mov files ===
+# === Load video files (.mov and .mp4) ===
 video_files = sorted([
     os.path.join(video_dir, f) for f in os.listdir(video_dir)
-    if f.lower().endswith('.mov')
+    if f.lower().endswith(('.mov', '.mp4'))
 ])
 
 video_count = len(video_files)
 if video_count == 0:
-    raise Exception("No .mov files found in directory.")
+    raise Exception("No .mov or .mp4 files found in directory.")
 
-print(f"Found {video_count} .mov video(s):")
+print(f"Found {video_count} video(s):")
 for i, f in enumerate(video_files):
     print(f"  [{i}] {os.path.basename(f)}")
 
