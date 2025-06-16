@@ -7,13 +7,16 @@ import subprocess
 import requests
 import random
 import json
+import serial.tools.list_ports
 
 # === SETTINGS ===
 # video_dir = "/Users/nickmarucci/CodeProjects/MicroServers/videos"
 # video_dir = "/Users/nickmarucci/CodeProjects/MicroServers/beat"
-video_dir = "/Users/nickmarucci/CodeProjects/MicroServers/frameofmynd"
+# video_dir = "/Users/nickmarucci/CodeProjects/MicroServers/frameofmynd"
+video_dir = "/Users/nickmarucci/CodeProjects/MicroServers/bohemianball"
 
-arduino_port = "/dev/tty.usbmodem11201"
+
+arduino_port = "/dev/cu.usbmodem1201"
 baud_rate = 9600
 vlc_password = str(random.randint(10000, 99999))  # Random password for this session
 http_port = 8080
@@ -36,11 +39,34 @@ for i, f in enumerate(video_files):
 # === Connect to Arduino ===
 try:
     print(f"Attempting to connect to Arduino on {arduino_port} at {baud_rate} baud...")
-    # Reduced timeout to 0.1 seconds for more responsive reading
+    
+    # List available ports for debugging
+    ports = serial.tools.list_ports.comports()
+    print("\nAvailable serial ports:")
+    for port in ports:
+        print(f"  {port.device} - {port.description}")
+    print()
+    
+    # Try to open the serial port
     ser = serial.Serial(arduino_port, baud_rate, timeout=0.05, exclusive=True)
     print(f"Connected to Arduino on {arduino_port}")
+    
     # Clear any initial data
     ser.reset_input_buffer()
+    
+    # Test reading
+    print("Testing Arduino communication...")
+    test_start = time.time()
+    while time.time() - test_start < 2:  # Test for 2 seconds
+        if ser.in_waiting:
+            data = ser.readline()
+            try:
+                value = data.decode('utf-8').strip()
+                print(f"Received from Arduino: {value}")
+            except:
+                print(f"Received raw data: {data}")
+        time.sleep(0.1)
+    
     print("Arduino connection successful")
 except Exception as e:
     print(f"Error connecting to Arduino: {e}")
@@ -276,3 +302,16 @@ while True:
     except Exception as e:
         # Silent error handling to avoid delays
         pass
+
+print("Checking available serial ports...")
+ports = serial.tools.list_ports.comports()
+print("\nAvailable serial ports:")
+for port in ports:
+    print(f"  {port.device} - {port.description}")
+
+print("\nCurrent port in script:", "/dev/cu.usbmodem1201")
+print("\nIf you don't see your Arduino listed above, try:")
+print("1. Unplugging and replugging your Arduino")
+print("2. Checking if the Arduino IDE can see the port")
+print("3. Making sure no other program is using the port")
+sys.exit(0)
